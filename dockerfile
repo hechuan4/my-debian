@@ -2,7 +2,7 @@ FROM node:20-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# 1. 替换源以加速下载
+# 1. 替换源以加速下载 (Debian 12 Bookworm 专用路径)
 RUN sed -i 's#deb.debian.org#mirrors.aliyun.com#g' /etc/apt/sources.list.d/debian.sources && \
     sed -i 's#security.debian.org#mirrors.aliyun.com#g' /etc/apt/sources.list.d/debian.sources
 
@@ -17,10 +17,9 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# 3. 配置 SSH (允许 root 登录并设置初始密码)
-# 这里的 'root:123456' 你可以改成自己想要的密码
+# 3. 配置 SSH (允许 root 登录并设置指定密码)
 RUN mkdir /var/run/sshd && \
-    echo 'root:123456' | chpasswd && \
+    echo 'root:1479696753' | chpasswd && \
     sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
     sed -i 's/UsePAM yes/UsePAM no/g' /etc/ssh/sshd_config
 
@@ -33,5 +32,5 @@ WORKDIR /app
 # 5. 暴露 22 端口
 EXPOSE 22
 
-# 6. 启动时同时开启 SSH 服务和 Bash
+# 6. 启动 SSH 服务
 CMD ["/usr/sbin/sshd", "-D"]
