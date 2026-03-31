@@ -3,9 +3,9 @@ FROM node:24-slim
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Shanghai
 
-# 1. 替换源以加速下载
-RUN sed -i 's#deb.debian.org#://aliyun.com#g' /etc/apt/sources.list.d/debian.sources && \
-    sed -i 's#security.debian.org#://aliyun.com#g' /etc/apt/sources.list.d/debian.sources
+# 1. 替换源以加速下载 (Debian 12 Bookworm 专用路径)
+RUN sed -i 's#deb.debian.org#mirrors.aliyun.com#g' /etc/apt/sources.list.d/debian.sources && \
+    sed -i 's#security.debian.org#mirrors.aliyun.com#g' /etc/apt/sources.list.d/debian.sources
 
 # 2. 安装核心工具 (包含 cron, sudo 等)
 RUN apt-get update && apt-get install -y \
