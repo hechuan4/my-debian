@@ -43,6 +43,7 @@ RUN mkdir /var/run/sshd && \
 
 # 4. 安装 Wrangler
 RUN npm config set registry https://registry.npmmirror.com && \
+    npm install -g wrangler
 
 WORKDIR /home/hechuan
 
