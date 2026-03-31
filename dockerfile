@@ -1,12 +1,13 @@
 FROM node:24-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Shanghai
 
-# 1. 替换源以加速下载 (Debian 12 Bookworm 专用路径)
-RUN sed -i 's#deb.debian.org#mirrors.aliyun.com#g' /etc/apt/sources.list.d/debian.sources && \
-    sed -i 's#security.debian.org#mirrors.aliyun.com#g' /etc/apt/sources.list.d/debian.sources
+# 1. 替换源以加速下载
+RUN sed -i 's#deb.debian.org#://aliyun.com#g' /etc/apt/sources.list.d/debian.sources && \
+    sed -i 's#security.debian.org#://aliyun.com#g' /etc/apt/sources.list.d/debian.sources
 
-# 2. 安装核心工具及 SSH 服务
+# 2. 安装核心工具 (包含 cron, sudo 等)
 RUN apt-get update && apt-get install -y \
     openssh-server \
     rclone \
@@ -17,23 +18,38 @@ RUN apt-get update && apt-get install -y \
     unzip \
     zip \
     ca-certificates \
+    cron \
+    locales \
+    sudo \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# 3. 配置 SSH (允许 root 登录并设置指定密码)
+# 3. 设置系统时区并解决 perl 警告
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
+    sed -i 's/# zh_CN.UTF-8 UTF-8/zh_CN.UTF-8 UTF-8/' /etc/locale.gen && \
+    locale-gen
+
+# 4. 【新增】添加用户 hechuan
+# 创建用户，指定密码 (这里设为和 root 一样，你可以自行修改)，并加入 sudo 组
+RUN useradd -m -s /bin/bash hechuan && \
+    echo 'hechuan:1479696753' | chpasswd && \
+    adduser hechuan sudo
+
+# 5. 配置 SSH
 RUN mkdir /var/run/sshd && \
     echo 'root:1479696753' | chpasswd && \
     sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
     sed -i 's/UsePAM yes/UsePAM no/g' /etc/ssh/sshd_config
 
-# 4. 安装 Wrangler
-RUN npm config set registry https://registry.npmmirror.com && \
+# 6. 安装 Wrangler
+RUN npm config set registry https://npmmirror.com && \
     npm install -g wrangler
 
-WORKDIR /app
+WORKDIR /home/hechuan
 
-# 5. 暴露 22 端口
+# 7. 暴露端口
 EXPOSE 22
 
-# 6. 启动 SSH 服务
-CMD ["/usr/sbin/sshd", "-D"]
+# 8. 同时启动 cron 和 sshd
+# 确保 cron 启动，sshd 保持前台运行
+CMD ["sh", "-c", "service cron start && /usr/sbin/sshd -D"]
