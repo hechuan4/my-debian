@@ -1,4 +1,4 @@
-FROM node:20-slim
+FROM node:24-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     wget \
     unzip \
+    zip \
     ca-certificates \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
