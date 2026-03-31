@@ -41,9 +41,8 @@ RUN mkdir /var/run/sshd && \
     sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
     sed -i 's/UsePAM yes/UsePAM no/g' /etc/ssh/sshd_config
 
-# 6. 安装 Wrangler
-RUN npm config set registry https://npmmirror.com && \
-    npm install -g wrangler
+# 4. 安装 Wrangler
+RUN npm config set registry https://registry.npmmirror.com && \
 
 WORKDIR /home/hechuan
 
