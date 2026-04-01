@@ -2,7 +2,9 @@ name: Build and Push Docker Image
 
 on:
   push:
-    branches: [ "main" ]  # 只要你往 main 分支推代码，它就自动运行
+    branches: [ "main" ]
+    paths:
+      - 'Dockerfile'  # 关键点：只有 Dockerfile 文件变动时才触发
 
 jobs:
   build-and-push:
@@ -22,4 +24,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/my-debian:latest # 这里会变成 hechuan/my-debian:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/my-debian:latest
